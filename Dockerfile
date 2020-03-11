@@ -26,9 +26,6 @@ RUN apt-get update
 RUN apt-get install build-essential -y
 RUN curl -sL https://deb.nodesource.com/setup_12.x |  bash -
 RUN apt-get install nodejs -y
-RUN npm --version
-RUN node -v
-RUN npm -v
 RUN npm ci
 
 WORKDIR "/src/StShop"

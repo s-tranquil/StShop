@@ -16,34 +16,34 @@ namespace StShop.UI.Controllers
     {
         public class AccountController : ControllerBase
         {
-            private readonly AllContext db;
+            private readonly AllContext _context;
             public AccountController(AllContext context)
             {
-                db = context;
+                _context = context;
             }
 
-            //[HttpGet]
-            //public IActionResult Login()
-            //{
-            //    return View();
-            //}
+            // TODO: add admin user to EF initial migration
+
             [HttpPost]
-            [ValidateAntiForgeryToken]
-            public async Task<IActionResult> Login(LoginModel model)
+            //[ValidateAntiForgeryToken]
+            public async Task<IActionResult> Login([FromBody]LoginModel model)
             {
-                //if (ModelState.IsValid)
-                //{
-                User user = await db.Users.FirstOrDefaultAsync(u => u.Username == model.Email && u.Password == model.Password);
+                User user = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
-                    await Authenticate(model.Email); // аутентификация
-
-                    //return RedirectToAction("Index", "Home");
+                    await Authenticate(model.Email);
                     return Ok();
                 }
-                return Unauthorized("Некорректные логин и(или) пароль");
-                //}
-                //return View(model);
+                return Unauthorized("Wrong login/password");
+            }
+
+            [HttpGet]
+            public IActionResult IsAuthorized()
+            {
+                var hasClaim = HttpContext.User?.Identity?.Name;
+                return Ok(new {
+                    IsAuthorized = hasClaim
+                });
             }
             //[HttpGet]
             //public IActionResult Register()

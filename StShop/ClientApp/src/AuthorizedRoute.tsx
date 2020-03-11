@@ -6,7 +6,6 @@ import { UserContext } from "./UserContext";
 const AuthorizedRoute: React.FC<RouteProps> = ({ component, ...rest }) => {
     const { user } = React.useContext(UserContext);
     const Component = component as React.ComponentClass;
-    debugger;
     
     return (
         <Route

@@ -20,7 +20,8 @@ export default class App extends React.Component {
                 <Layout>
                     <Switch>
                         <Route path="/auth" component={UnauthorizedLayout} />
-                        <AuthorizedRoute path="/app" component={() => <Home />} />
+                        <AuthorizedRoute path="/app" component={Home} />
+                        <AuthorizedRoute path="/fetch-data" component={FetchData} />
                         <Redirect to="/auth" />
                         {/*<Route exact path='/' component={Home} />
                         <Route path='/counter' component={Counter} />
