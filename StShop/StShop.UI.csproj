@@ -65,7 +65,7 @@
   </ItemGroup>
   
   <Target Name="Convert" BeforeTargets="PrepareForBuild">
-	<ConvertMain WorkingDirectory="ViewModels/" ConvertDirectory="ClientApp/src/models/"/>
+	<ConvertMain WorkingDirectory="ViewModels/" ConvertDirectory="ClientApp/src/models/" PathStyle="Kebab" />
   </Target>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

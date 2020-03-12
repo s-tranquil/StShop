@@ -2,13 +2,18 @@
 import { Link, useHistory } from 'react-router-dom'
 import { UserProvider, UserContext } from "./UserContext";
 //import { RouteProps } from "react-router"
+import { useForm } from "react-hook-form";
+import { User } from "./models/user";
+
+const emailRegexp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
 const LoginPage: React.FC<any> = () => {
     const history = useHistory();
     const { setUser } = React.useContext(UserContext);
+    const { register, handleSubmit, errors } = useForm();
 
-    const onClick = React.useCallback(
-        () => {
+    const onSubmit = React.useCallback(
+        (submitData) => {
             fetch(
                 "account/login",
                 {
@@ -17,25 +22,21 @@ const LoginPage: React.FC<any> = () => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({
-                        Username: "a@a.com",
-                        Password: "123"
-                    })
+                    body: JSON.stringify(submitData)
                 })
                 .then(response => {
                     console.log(response);
                     response
                         .json()
-                        .then(json => {
-                            // get user from response
+                        .then((user: User) => {
                             setUser({
                                 loggedIn: true,
-                                userName: "a@a.com"
+                                userName: user.email
                             });
                             history.push('/app')
                         });
                 })
-                .catch();// add 401 handling
+                .catch();// TODO: add 401 handling
 
         },
         [setUser, history]
@@ -44,14 +45,23 @@ const LoginPage: React.FC<any> = () => {
     return (
         <div>
             <h1>Login Page</h1>
-            <p>
-                    For this example application, we cannot visit <Link to="/app">/app</Link> until we are logged in.
-              Clicking the "Login" button will simulate a login by setting Redux state. This example compliments
-              the CSS-Tricks article I wrote for <a target="_blank" href="https://css-tricks.com/react-router-4/">React Router 4</a>.
-            </p>
-            <button onClick={onClick}>
-                Login
-            </button>
+
+            {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <div>
+                    <label htmlFor="email">Email</label>
+                    <input name="email" ref={register({ required: true, pattern: emailRegexp })} />
+                    {errors.email && <span>Enter a valid email</span>}
+                </div>
+
+                <div>
+                    <label htmlFor="email">Password</label>
+                    <input name="password" type="password" ref={register({ required: true })} />
+                    {errors.name && <span>Enter a password</span>}
+                </div>
+
+                <input type="submit" />
+            </form>
         </div>
     )
 };

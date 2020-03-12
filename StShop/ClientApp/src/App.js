@@ -18,6 +18,7 @@ var react_router_1 = require("react-router");
 var react_router_dom_1 = require("react-router-dom");
 var Layout_1 = require("./components/Layout");
 var Home_1 = require("./components/Home");
+var FetchData_1 = require("./components/FetchData");
 var AuthorizedRoute_1 = require("./AuthorizedRoute");
 var UnauthorizedLayout_1 = require("./UnauthorizedLayout");
 var UserContext_1 = require("./UserContext");
@@ -32,7 +33,8 @@ var App = /** @class */ (function (_super) {
             React.createElement(Layout_1.Layout, null,
                 React.createElement(react_router_dom_1.Switch, null,
                     React.createElement(react_router_1.Route, { path: "/auth", component: UnauthorizedLayout_1.UnauthorizedLayout }),
-                    React.createElement(AuthorizedRoute_1.AuthorizedRoute, { path: "/app", component: function () { return React.createElement(Home_1.Home, null); } }),
+                    React.createElement(AuthorizedRoute_1.AuthorizedRoute, { path: "/app", component: Home_1.Home }),
+                    React.createElement(AuthorizedRoute_1.AuthorizedRoute, { path: "/fetch-data", component: FetchData_1.FetchData }),
                     React.createElement(react_router_1.Redirect, { to: "/auth" })))));
     };
     App.displayName = App.name;

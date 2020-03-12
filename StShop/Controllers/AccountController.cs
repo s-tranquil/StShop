@@ -28,11 +28,14 @@ namespace StShop.UI.Controllers
             //[ValidateAntiForgeryToken]
             public async Task<IActionResult> Login([FromBody]LoginModel model)
             {
-                User user = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Email && u.Password == model.Password);
+                DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
                     await Authenticate(model.Email);
-                    return Ok();
+                    return Ok(new ViewModels.User
+                    {
+                        Email = user.Username
+                    });
                 }
                 return Unauthorized("Wrong login/password");
             }
