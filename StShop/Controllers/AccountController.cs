@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StShop.DAL.Models;
+
+using StShop.DAL.Context;
 using StShop.UI.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace StShop.UI.Controllers
 {
@@ -28,13 +28,13 @@ namespace StShop.UI.Controllers
             //[ValidateAntiForgeryToken]
             public async Task<IActionResult> Login([FromBody]LoginModel model)
             {
-                DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Email && u.Password == model.Password);
+                DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
                     await Authenticate(model.Email);
                     return Ok(new ViewModels.User
                     {
-                        Email = user.Username
+                        Email = user.Email
                     });
                 }
                 return Unauthorized("Wrong login/password");
@@ -44,7 +44,8 @@ namespace StShop.UI.Controllers
             public IActionResult IsAuthorized()
             {
                 var hasClaim = HttpContext.User?.Identity?.Name;
-                return Ok(new {
+                return Ok(new
+                {
                     IsAuthorized = hasClaim
                 });
             }
@@ -53,27 +54,30 @@ namespace StShop.UI.Controllers
             //{
             //    return View();
             //}
+
             //[HttpPost]
-            //[ValidateAntiForgeryToken]
+            ////[ValidateAntiForgeryToken]
             //public async Task<IActionResult> Register(RegisterModel model)
             //{
-            //    if (ModelState.IsValid)
+            //    DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u. == model.Email);
+            //    if (user == null)
             //    {
-            //        User user = await db.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-            //        if (user == null)
-            //        {
-            //            // добавляем пользователя в бд
-            //            db.Users.Add(new User { Email = model.Email, Password = model.Password });
-            //            await db.SaveChangesAsync();
+            //        // добавляем пользователя в бд
+            //        db.Users.Add(new User { Email = model.Email, Password = model.Password });
+            //        await db.SaveChangesAsync();
 
-            //            await Authenticate(model.Email); // аутентификация
+            //        await Authenticate(model.Email); // аутентификация
 
-            //            return RedirectToAction("Index", "Home");
-            //        }
-            //        else
-            //            ModelState.AddModelError("", "Некорректные логин и(или) пароль");
+            //        return OkResult(
+            //            new ViewModels.User
+            //            {
+            //                Email = model.Email,
+
+            //            }
+            //        );
             //    }
-            //    return View(model);
+            //    else
+            //        ModelState.AddModelError("", "Некорректные логин и(или) пароль");
             //}
 
             private async Task Authenticate(string userName)

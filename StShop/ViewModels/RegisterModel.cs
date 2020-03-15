@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-namespace StShop.UI.ViewModels
+﻿namespace StShop.UI.ViewModels
 {
     public class RegisterModel
     {

@@ -46,7 +46,12 @@
     <None Remove="ClientApp\src\components\Home.tsx" />
     <None Remove="ClientApp\src\components\Layout.tsx" />
     <None Remove="ClientApp\src\components\NavMenu.tsx" />
+    <None Remove="ClientApp\src\constants\email-regexp.ts" />
+    <None Remove="ClientApp\src\constants\index.ts" />
     <None Remove="ClientApp\src\index.tsx" />
+    <None Remove="ClientApp\src\models\index.ts" />
+    <None Remove="ClientApp\src\RegisterPage.tsx" />
+    <None Remove="ClientApp\src\tsd.d.ts" />
     <None Remove="ClientApp\src\UserContext.tsx" />
   </ItemGroup>
 
@@ -75,7 +80,7 @@
     </Exec>
     <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
-    <!-- <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" /> -->
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
   </Target>
 
 

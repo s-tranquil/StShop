@@ -1,11 +1,16 @@
 ﻿import * as React from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { UserProvider, UserContext } from "./UserContext";
-//import { RouteProps } from "react-router"
 import { useForm } from "react-hook-form";
 import { User } from "./models/user";
+import { emailRegexp } from "./constants";
+import { LoginModel } from "./models/login-model";
+import { nameof } from "ts-simple-nameof";
 
-const emailRegexp = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+const fieldNames = {
+    email: nameof<LoginModel>(x => x.email),
+    password: nameof<LoginModel>(x => x.password)
+};
 
 const LoginPage: React.FC<any> = () => {
     const history = useHistory();
@@ -45,19 +50,20 @@ const LoginPage: React.FC<any> = () => {
     return (
         <div>
             <h1>Login Page</h1>
+            <Link to="/auth/register">To register page</Link>
 
             {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div>
-                    <label htmlFor="email">Email</label>
-                    <input name="email" ref={register({ required: true, pattern: emailRegexp })} />
-                    {errors.email && <span>Enter a valid email</span>}
+                    <label htmlFor={fieldNames.email}>Email</label>
+                    <input name={fieldNames.email} ref={register({ required: true, pattern: emailRegexp })} />
+                    {errors[fieldNames.email] && <span>Enter a valid email</span>}
                 </div>
 
                 <div>
-                    <label htmlFor="email">Password</label>
-                    <input name="password" type="password" ref={register({ required: true })} />
-                    {errors.name && <span>Enter a password</span>}
+                    <label htmlFor={fieldNames.password}>Password</label>
+                    <input name={fieldNames.password} type="password" ref={register({ required: true })} />
+                    {errors[fieldNames.password] && <span>Enter a password</span>}
                 </div>
 
                 <input type="submit" />

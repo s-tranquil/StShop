@@ -1,14 +1,15 @@
+using System.Linq;
+
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StShop.DAL.Models;
-using System.Linq;
+
+using StShop.DAL.Context;
 
 namespace StShop
 {
@@ -85,19 +86,19 @@ namespace StShop
             });
 
 
-            //using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            //{
-            //    var context = scope.ServiceProvider.GetService<AllContext>();
-            //    this.ApplyMigrations(context);
-            //}
+            using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = scope.ServiceProvider.GetService<AllContext>();
+                this.ApplyMigrations(context);
+            }
         }
 
-        //public void ApplyMigrations(AllContext context)
-        //{
-        //    if (context.Database.GetPendingMigrations().Any())
-        //    {
-        //        context.Database.Migrate();
-        //    }
-        //}
+        public void ApplyMigrations(AllContext context)
+        {
+            if (context.Database.GetPendingMigrations().Any())
+            {
+                context.Database.Migrate();
+            }
+        }
     }
 }
