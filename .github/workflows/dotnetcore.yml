@@ -16,4 +16,4 @@ jobs:
     - name: Build the stack
       run: docker-compose up -d
     - name: Test
-      run: docker run --network container:web appropriate/curl -s --retry 10 --retry-connrefused http://localhost:8000/
+      run: docker run --network container:stshop_web_1 appropriate/curl -s --retry 10 --retry-connrefused http://localhost:8000/
