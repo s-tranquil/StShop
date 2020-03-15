@@ -1,11 +1,15 @@
-﻿import * as React from 'react'
-import { Link, useHistory } from 'react-router-dom'
+﻿import * as React from "react";
+import { Link, useHistory } from "react-router-dom";
 import { UserContext } from "./UserContext";
 import { useForm } from "react-hook-form";
 import { User } from "./models/user";
 import { emailRegexp } from "./constants";
 import { RegisterModel } from "./models/register-model";
 import { nameof } from "ts-simple-nameof";
+import { Map, TileLayer, Marker, Popup, withLeaflet } from "react-leaflet";
+import { ReactLeafletSearch } from "react-leaflet-search";
+import { OpenStreetMap as OpenStreetMapProvider  } from "react-leaflet-search/lib/Providers";
+import { SearchControlProps  } from "react-leaflet-search/lib/search-control";
 
 const fieldNames = {
     email: nameof<RegisterModel>(x => x.email),
@@ -14,6 +18,46 @@ const fieldNames = {
     password: nameof<RegisterModel>(x => x.password),
     address: nameof<RegisterModel>(x => x.address)
 };
+
+// good old monkey-patching
+// I wish it was another way...
+const oldLatLngHandler = ReactLeafletSearch.prototype.latLngHandler;
+ReactLeafletSearch.prototype.latLngHandler = function (...props: Parameters<ReactLeafletSearch["latLngHandler"]>) {
+    console.log(...props);
+    oldLatLngHandler.apply(this, props);
+}
+
+const SearchComponent = withLeaflet(ReactLeafletSearch);
+
+// const searchComponentDecorated = new Proxy(
+//     searchComponent,
+//     {
+//         get: function (obj, prop) {
+//             if (prop === "search") {
+//                 return (...props: Parameters<ReactLeafletSearch["latLngHandler"]>) => {
+//                     var result =  searchComponent.latLngHandler(...props);
+//                     return result;
+//                 }
+//             }
+//         }
+//     }
+// );
+// const osmProvider = new OpenStreetMapProvider({
+//     providerKey: "CustomOsmProvider"
+// });
+// const osmProviderDecorated = new Proxy(
+//     osmProvider,
+//     {
+//         get: function (obj, prop) {
+//             if (prop === "search") {
+//                 return (...props: Parameters<OpenStreetMapProvider["search"]>) => {
+//                     var result =  osmProvider.search(...props);
+//                     return result;
+//                 }
+//             }
+//         }
+//     }
+// );
 
 const RegisterPage: React.FC<any> = () => {
     const history = useHistory();
@@ -104,6 +148,47 @@ const RegisterPage: React.FC<any> = () => {
 
                 <input type="submit" />
             </form>
+
+            <div>
+                <Map
+                    center={[50, 10]}
+                    zoom={6}
+                    maxZoom={16}
+                    attributionControl={true}
+                    zoomControl={true}
+                    doubleClickZoom={true}
+                    scrollWheelZoom={true}
+                    dragging={true}
+                    animate={true}
+                    easeLinearity={0.35}
+                >
+                    <TileLayer
+                        url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+                    />
+                    {/* {searchComponentDecorated} */}
+                    <SearchComponent
+                        position='topleft'
+                        zoom={16}
+                        // search={[56, 45.656]}
+                        showMarker={true}
+                        showPopup={true}
+                        // inputPlaceholder={'Search Latitude, Longitude'}
+                        closeResultsOnClick={true}
+                        // popUp={this.customPopup}
+                        // customProvider={osmProviderDecorated}
+                        // handler={(obj) => {
+                        //     if (obj.event === "add") {
+                        //         console.log(obj.payload);
+                        //     }
+                        // }}
+                    />
+                    <Marker position={[50, 10]}>
+                    <Popup>
+                        Popup for any custom information.
+                    </Popup>
+                    </Marker>
+                </Map>
+            </div>
         </div>
     )
 };
