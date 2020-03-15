@@ -12,15 +12,20 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["StShop/StShop.UI.csproj", "StShop/"]
+RUN true
 COPY ["StShop.DAL/StShop.DAL.csproj", "StShop.DAL/"]
 RUN dotnet restore "StShop/StShop.UI.csproj"
 COPY . .
 WORKDIR "/src/StShop"
 RUN dotnet build "StShop.UI.csproj" -c Release -o /app/build
-
+RUN true
 WORKDIR "/src/StShop/ClientApp"
+RUN true
 COPY ["StShop/ClientApp/package*.json", "./"]
+
+RUN true
 COPY ["StShop/ClientApp/public/*", "./public/"]
+RUN true
 COPY ["StShop/ClientApp/src/*", "./src/"]
 RUN apt-get update
 RUN apt-get install build-essential -y
