@@ -15,6 +15,7 @@ namespace StShop.DAL.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Country = table.Column<string>(nullable: true),
                     City = table.Column<string>(nullable: true),
+                    Street = table.Column<string>(nullable: true),
                     House = table.Column<string>(nullable: true),
                     ZipCode = table.Column<string>(nullable: true)
                 },

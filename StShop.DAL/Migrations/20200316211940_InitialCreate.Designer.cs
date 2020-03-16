@@ -10,7 +10,7 @@ using StShop.DAL.Context;
 namespace StShop.DAL.Migrations
 {
     [DbContext(typeof(AllContext))]
-    [Migration("20200315112117_InitialCreate")]
+    [Migration("20200316211940_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,6 +35,9 @@ namespace StShop.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("House")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Street")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ZipCode")

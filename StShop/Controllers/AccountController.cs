@@ -25,7 +25,6 @@ namespace StShop.UI.Controllers
             // TODO: add admin user to EF initial migration
 
             [HttpPost]
-            //[ValidateAntiForgeryToken]
             public async Task<IActionResult> Login([FromBody]LoginModel model)
             {
                 DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
@@ -55,30 +54,44 @@ namespace StShop.UI.Controllers
             //    return View();
             //}
 
-            //[HttpPost]
-            ////[ValidateAntiForgeryToken]
-            //public async Task<IActionResult> Register(RegisterModel model)
-            //{
-            //    DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u. == model.Email);
-            //    if (user == null)
-            //    {
-            //        // добавляем пользователя в бд
-            //        db.Users.Add(new User { Email = model.Email, Password = model.Password });
-            //        await db.SaveChangesAsync();
+            [HttpPost]
+            public async Task<IActionResult> Register([FromBody]RegisterModel model)
+            {
+                DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+                if (user == null)
+                {
+                    _context.Users.Add(new DAL.Models.User { 
+                        Role = DAL.Models.UserRole.Customer,
+                        Email = model.Email,
+                        Password = model.Password,
+                        Name = model.Name,
+                        Surname = model.Surname,
+                        DisplayAddress = model.DisplayAddress,
+                        Address = new DAL.Models.Address
+                        {
+                            Country = model.Address.Country,
+                            City = model.Address.City,
+                            Street = model.Address.Street,
+                            House = model.Address.House,
+                            ZipCode = model.Address.ZipCode
+                        }
+                    });
+                    await _context.SaveChangesAsync();
 
-            //        await Authenticate(model.Email); // аутентификация
+                    await Authenticate(model.Email);
 
-            //        return OkResult(
-            //            new ViewModels.User
-            //            {
-            //                Email = model.Email,
-
-            //            }
-            //        );
-            //    }
-            //    else
-            //        ModelState.AddModelError("", "Некорректные логин и(или) пароль");
-            //}
+                    return Ok(
+                        new ViewModels.User
+                        {
+                            Email = model.Email,
+                        }
+                    );
+                }
+                else
+                {
+                    return Forbid();
+                }
+            }
 
             private async Task Authenticate(string userName)
             {

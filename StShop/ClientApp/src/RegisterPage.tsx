@@ -8,64 +8,34 @@ import { RegisterModel } from "./models/register-model";
 import { nameof } from "ts-simple-nameof";
 import { Map, TileLayer, Marker, Popup, withLeaflet } from "react-leaflet";
 import { ReactLeafletSearch } from "react-leaflet-search";
-import { OpenStreetMap as OpenStreetMapProvider  } from "react-leaflet-search/lib/Providers";
-import { SearchControlProps  } from "react-leaflet-search/lib/search-control";
+import { Address } from "./models/address";
+
+interface IRegisterAddressState {
+    displayAddress: string;
+    address: Address;
+}
 
 const fieldNames = {
     email: nameof<RegisterModel>(x => x.email),
     name: nameof<RegisterModel>(x => x.name),
     surname: nameof<RegisterModel>(x => x.surname),
     password: nameof<RegisterModel>(x => x.password),
-    address: nameof<RegisterModel>(x => x.address)
+    address: nameof<RegisterModel>(x => x.address),
+    displayAddress: nameof<RegisterModel>(x => x.displayAddress)
 };
-
-// good old monkey-patching
-// I wish it was another way...
-const oldLatLngHandler = ReactLeafletSearch.prototype.latLngHandler;
-ReactLeafletSearch.prototype.latLngHandler = function (...props: Parameters<ReactLeafletSearch["latLngHandler"]>) {
-    console.log(...props);
-    oldLatLngHandler.apply(this, props);
-}
-
-const SearchComponent = withLeaflet(ReactLeafletSearch);
-
-// const searchComponentDecorated = new Proxy(
-//     searchComponent,
-//     {
-//         get: function (obj, prop) {
-//             if (prop === "search") {
-//                 return (...props: Parameters<ReactLeafletSearch["latLngHandler"]>) => {
-//                     var result =  searchComponent.latLngHandler(...props);
-//                     return result;
-//                 }
-//             }
-//         }
-//     }
-// );
-// const osmProvider = new OpenStreetMapProvider({
-//     providerKey: "CustomOsmProvider"
-// });
-// const osmProviderDecorated = new Proxy(
-//     osmProvider,
-//     {
-//         get: function (obj, prop) {
-//             if (prop === "search") {
-//                 return (...props: Parameters<OpenStreetMapProvider["search"]>) => {
-//                     var result =  osmProvider.search(...props);
-//                     return result;
-//                 }
-//             }
-//         }
-//     }
-// );
 
 const RegisterPage: React.FC<any> = () => {
     const history = useHistory();
     const { setUser } = React.useContext(UserContext);
     const { register, handleSubmit, errors } = useForm();
+    const [addressState, setAddressState] = React.useState<IRegisterAddressState>({
+        displayAddress: "",
+        address: {} as Address
+    });
 
     const onSubmit = React.useCallback(
         (submitData) => {
+            submitData.address = addressState.address;
             fetch(
                 "account/register",
                 {
@@ -88,17 +58,54 @@ const RegisterPage: React.FC<any> = () => {
                             history.push('/app')
                         });
                 })
-                .catch();// TODO: add 401 handling
+                .catch();// TODO: add 403 handling
 
         },
-        [setUser, history]
+        [setUser, history, addressState]
+    );
+
+    const SearchComponent = React.useMemo(
+        () => {
+            // good old monkey-patching
+            // I wish it was another way...
+            const originalLatLngHandler = ReactLeafletSearch.prototype.latLngHandler;
+            ReactLeafletSearch.prototype.latLngHandler = function (...props: Parameters<ReactLeafletSearch["latLngHandler"]>) {
+                // getting our address from raw osm response array
+                const latLng = props[0];
+                const rawInfos = (props[2] as any).raw as any[];
+                const rawInfo = rawInfos
+                    .find(x => 
+                        x.lat == latLng.lat && 
+                        x.lon == latLng.lng
+                    );
+                const rawAddress = rawInfo.address;
+
+                // making sure that it's a house
+                if ("house_number" in rawAddress) {
+                    setAddressState({
+                        displayAddress: rawInfo.display_name,
+                        address: {
+                            country: rawAddress.country,
+                            city: rawAddress.city,
+                            street: rawAddress.road,
+                            house: rawAddress.house_number,
+                            zipCode: rawAddress.postcode
+                        }
+                    });
+                }
+                // calling the original handler
+                originalLatLngHandler.apply(this, props);
+            }
+
+            return withLeaflet(ReactLeafletSearch);
+        },
+        [setAddressState, ReactLeafletSearch]
     );
 
     return (
         <div>
             <h1>Register Page</h1>
 
-            {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div>
                     <label htmlFor={fieldNames.email}>Email</label>
@@ -128,12 +135,14 @@ const RegisterPage: React.FC<any> = () => {
                 </div>
 
                 <div>
-                    <label htmlFor={fieldNames.address}>Address</label>
+                    <label htmlFor={fieldNames.displayAddress}>Address</label>
                     <input
-                        name={fieldNames.address}
-                        ref={register({ required: true })} 
+                        name={fieldNames.displayAddress}
+                        ref={register({ required: true })}
+                        readOnly={true}
+                        value={addressState.displayAddress}
                     />
-                    {errors[fieldNames.address] && <span>Enter your address</span>}
+                    {errors[fieldNames.displayAddress] && <span>Input your address into the text field on the map</span>}
                 </div>
 
                 <div>
@@ -165,22 +174,13 @@ const RegisterPage: React.FC<any> = () => {
                     <TileLayer
                         url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
                     />
-                    {/* {searchComponentDecorated} */}
                     <SearchComponent
                         position='topleft'
                         zoom={16}
-                        // search={[56, 45.656]}
                         showMarker={true}
                         showPopup={true}
-                        // inputPlaceholder={'Search Latitude, Longitude'}
                         closeResultsOnClick={true}
-                        // popUp={this.customPopup}
-                        // customProvider={osmProviderDecorated}
-                        // handler={(obj) => {
-                        //     if (obj.event === "add") {
-                        //         console.log(obj.payload);
-                        //     }
-                        // }}
+                        openSearchOnLoad={true}
                     />
                     <Marker position={[50, 10]}>
                     <Popup>

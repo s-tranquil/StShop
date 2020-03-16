@@ -35,6 +35,9 @@ namespace StShop.DAL.Migrations
                     b.Property<string>("House")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Street")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ZipCode")
                         .HasColumnType("nvarchar(max)");
 
