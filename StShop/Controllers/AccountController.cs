@@ -22,8 +22,6 @@ namespace StShop.UI.Controllers
                 _context = context;
             }
 
-            // TODO: add admin user to EF initial migration
-
             [HttpPost]
             public async Task<IActionResult> Login([FromBody]LoginModel model)
             {

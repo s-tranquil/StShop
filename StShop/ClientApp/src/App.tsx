@@ -3,7 +3,7 @@ import { Route, Redirect } from 'react-router';
 import { Switch } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Home } from './components/Home';
-import { FetchData } from './components/FetchData';
+import { UsersTable } from './components/UsersTable';
 import { Counter } from './components/Counter';
 import { AuthorizedRoute } from "./AuthorizedRoute";
 import { UnauthorizedLayout } from "./UnauthorizedLayout";
@@ -21,11 +21,10 @@ export default class App extends React.Component {
                     <Switch>
                         <Route path="/auth" component={UnauthorizedLayout} />
                         <AuthorizedRoute path="/app" component={Home} />
-                        <AuthorizedRoute path="/fetch-data" component={FetchData} />
+                        <AuthorizedRoute path="/fetch-data" component={UsersTable} />
                         <Redirect to="/auth" />
                         {/*<Route exact path='/' component={Home} />
-                        <Route path='/counter' component={Counter} />
-                        <Route path='/fetch-data' component={FetchData} /> */}
+                        <Route path='/counter' component={Counter} /> */}
                     </Switch>
                 </Layout>
             </UserProvider>
