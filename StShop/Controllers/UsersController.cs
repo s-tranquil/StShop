@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +10,7 @@ using StShop.UI.ViewModels;
 
 namespace StShop.Controllers
 {
-    //[ApiController]
+    [ApiController]
     [Route("[controller]")]
     public class UsersController : ControllerBase
     {
@@ -24,7 +25,7 @@ namespace StShop.Controllers
         }
 
         [HttpGet("GetAll")]
-        //[Authorize]
+        [Authorize]
         public IEnumerable<UserDisplayItem> GetAll()
         {
             var result = _context.Users.Select(x =>

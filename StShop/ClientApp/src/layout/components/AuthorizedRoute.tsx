@@ -1,7 +1,12 @@
-﻿import * as React from 'react';
-import { Route, Redirect } from 'react-router-dom';
+﻿import * as React from "react";
+
 import { RouteProps } from "react-router";
-import { UserContext } from "./UserContext";
+import {
+    Redirect,
+    Route
+} from "react-router-dom";
+
+import { UserContext } from "../../contracts";
 
 const AuthorizedRoute: React.FC<RouteProps> = ({ component, ...rest }) => {
     const { user } = React.useContext(UserContext);

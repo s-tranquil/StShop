@@ -1,0 +1,40 @@
+{
+    "generalConfiguration": {
+        "sortOnBeforeSave": true
+    },
+    "importStringConfiguration": {
+        "quoteMark": "double",
+        "maximumNumberOfImportExpressionsPerLine": {
+            "type": "words",
+            "count": 1
+        }
+    },
+    "sortConfiguration": {
+        "customOrderingRules": {
+            "rules": [
+                
+                {
+                    "type": "importMember",
+                    "regex": "^$",
+                    "orderLevel": 10
+                },
+                {
+                    "regex": "^react$",
+                    "orderLevel": 5
+                },
+                {
+                    "regex": "^[@]",
+                    "orderLevel": 30
+                },
+                {
+                    "regex": ".*models\/.*",
+                    "orderLevel": 50
+                },
+                {
+                    "regex": "^[.]",
+                    "orderLevel": 40
+                }
+            ]
+        }
+    }
+}

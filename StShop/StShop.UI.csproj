@@ -40,33 +40,29 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\App.test.tsx" />
-    <None Remove="ClientApp\src\App.tsx" />
-    <None Remove="ClientApp\src\components\Counter.tsx" />
-    <None Remove="ClientApp\src\components\FetchData.tsx" />
-    <None Remove="ClientApp\src\components\Home.tsx" />
-    <None Remove="ClientApp\src\components\Layout.tsx" />
-    <None Remove="ClientApp\src\components\NavMenu.tsx" />
     <None Remove="ClientApp\src\constants\email-regexp.ts" />
     <None Remove="ClientApp\src\constants\index.ts" />
     <None Remove="ClientApp\src\index.tsx" />
     <None Remove="ClientApp\src\models\index.ts" />
-    <None Remove="ClientApp\src\RegisterPage.tsx" />
     <None Remove="ClientApp\src\tsd.d.ts" />
-    <None Remove="ClientApp\src\UserContext.tsx" />
   </ItemGroup>
 
   <ItemGroup>
     <TypeScriptCompile Remove="ClientApp\src\AuthorizedRoute.tsx" />
+    <TypeScriptCompile Remove="ClientApp\src\components\Counter.tsx" />
+    <TypeScriptCompile Remove="ClientApp\src\components\FetchData.tsx" />
+    <TypeScriptCompile Remove="ClientApp\src\components\Home.tsx" />
+    <TypeScriptCompile Remove="ClientApp\src\components\Layout.tsx" />
+    <TypeScriptCompile Remove="ClientApp\src\components\NavMenu.tsx" />
+    <TypeScriptCompile Remove="ClientApp\src\components\UsersTable.tsx" />
     <TypeScriptCompile Remove="ClientApp\src\LoginPage.tsx" />
+    <TypeScriptCompile Remove="ClientApp\src\RegisterPage.tsx" />
     <TypeScriptCompile Remove="ClientApp\src\UnauthorizedLayout.tsx" />
+    <TypeScriptCompile Remove="ClientApp\src\UserContext.tsx" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\StShop.DAL\StShop.DAL.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Include="ClientApp\src\App.tsx" />
   </ItemGroup>
   
   <Target Name="Convert" BeforeTargets="PrepareForBuild">

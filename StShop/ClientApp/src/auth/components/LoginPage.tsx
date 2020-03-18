@@ -1,11 +1,17 @@
-﻿import * as React from 'react'
-import { Link, useHistory } from 'react-router-dom'
-import { UserProvider, UserContext } from "./UserContext";
+﻿import * as React from "react";
+
 import { useForm } from "react-hook-form";
-import { User } from "./models/user";
-import { emailRegexp } from "./constants";
-import { LoginModel } from "./models/login-model";
+import {
+    Link,
+    useHistory
+} from "react-router-dom";
 import { nameof } from "ts-simple-nameof";
+
+import { emailRegexp } from "../../constants";
+import { UserContext } from "../../contracts";
+
+import { LoginModel } from "../../models/login-model";
+import { User } from "../../models/user";
 
 const fieldNames = {
     email: nameof<LoginModel>(x => x.email),
@@ -38,7 +44,7 @@ const LoginPage: React.FC<any> = () => {
                                 loggedIn: true,
                                 userName: user.email
                             });
-                            history.push('/app')
+                            history.push('/users')
                         });
                 })
                 .catch();// TODO: add 401 handling

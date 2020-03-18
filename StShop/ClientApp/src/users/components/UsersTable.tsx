@@ -1,17 +1,22 @@
 import * as React from "react";
-import { UserDisplayItem } from "../models/user-display-item";
+
+import { Redirect } from "react-router";
+
+import { UserDisplayItem } from "../../models/user-display-item";
 
 interface IState {
     fetching: boolean;
+    error: boolean;
     items: UserDisplayItem[];
 }
 
 const UsersTable: React.FC = () => {
     const [state, setState] = React.useState<IState>({
         fetching: true,
+        error: false,
         items: []
     });
-    
+
     React.useEffect(
         () => {
             fetch("users/getall")
@@ -21,17 +26,28 @@ const UsersTable: React.FC = () => {
                         .then((users: UserDisplayItem[]) => {
                             setState({
                                 fetching: false,
+                                error: false,
                                 items: users
                             });
                         });
                 })
-                .catch();// TODO: add 401 handling
+                .catch(() =>
+                    setState({
+                        fetching: false,
+                        error: true,
+                        items: []
+                    })
+                );
         },
         [setState]
     );
 
     if (state.fetching) {
         return <p><em>Loading...</em></p>;
+    }
+
+    if (state.error) {
+        return <Redirect to="auth/login" />;
     }
 
     return (

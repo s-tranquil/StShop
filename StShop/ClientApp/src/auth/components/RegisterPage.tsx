@@ -1,14 +1,26 @@
 ﻿import * as React from "react";
-import { Link, useHistory } from "react-router-dom";
-import { UserContext } from "./UserContext";
+
 import { useForm } from "react-hook-form";
-import { User } from "./models/user";
-import { emailRegexp } from "./constants";
-import { RegisterModel } from "./models/register-model";
-import { nameof } from "ts-simple-nameof";
-import { Map, TileLayer, Marker, Popup, withLeaflet } from "react-leaflet";
+import {
+    Map,
+    Marker,
+    Popup,
+    TileLayer,
+    withLeaflet
+} from "react-leaflet";
 import { ReactLeafletSearch } from "react-leaflet-search";
-import { Address } from "./models/address";
+import {
+    Link,
+    useHistory
+} from "react-router-dom";
+import { nameof } from "ts-simple-nameof";
+
+import { emailRegexp } from "../../constants";
+import { UserContext } from "../../contracts";
+
+import { Address } from "../../models/address";
+import { RegisterModel } from "../../models/register-model";
+import { User } from "../../models/user";
 
 interface IRegisterAddressState {
     displayAddress: string;
@@ -55,7 +67,7 @@ const RegisterPage: React.FC<any> = () => {
                                 loggedIn: true,
                                 userName: user.email
                             });
-                            history.push('/app')
+                            history.push('/users')
                         });
                 })
                 .catch();// TODO: add 403 handling
