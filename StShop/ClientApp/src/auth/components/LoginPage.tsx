@@ -5,6 +5,14 @@ import {
     Link,
     useHistory
 } from "react-router-dom";
+import {
+    Button,
+    Form,
+    FormFeedback,
+    FormGroup,
+    Input,
+    Label
+} from "reactstrap";
 import { nameof } from "ts-simple-nameof";
 
 import { emailRegexp } from "../../constants";
@@ -58,22 +66,21 @@ const LoginPage: React.FC<any> = () => {
             <h1>Login Page</h1>
             <Link to="/auth/register">To register page</Link>
 
-            {/* "handleSubmit" will validate your inputs before invoking "onSubmit" */}
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <div>
-                    <label htmlFor={fieldNames.email}>Email</label>
-                    <input name={fieldNames.email} ref={register({ required: true, pattern: emailRegexp })} />
-                    {errors[fieldNames.email] && <span>Enter a valid email</span>}
-                </div>
+            <Form onSubmit={handleSubmit(onSubmit)}>
+                <FormGroup>
+                    <Label htmlFor={fieldNames.email}>Email</Label>
+                    <Input name={fieldNames.email} innerRef={register({ required: true, pattern: emailRegexp })} />
+                    {errors[fieldNames.email] && <FormFeedback>Enter a valid email</FormFeedback>}
+                </FormGroup>
 
-                <div>
-                    <label htmlFor={fieldNames.password}>Password</label>
-                    <input name={fieldNames.password} type="password" ref={register({ required: true })} />
-                    {errors[fieldNames.password] && <span>Enter a password</span>}
-                </div>
+                <FormGroup>
+                    <Label htmlFor={fieldNames.password}>Password</Label>
+                    <Input name={fieldNames.password} type="password" innerRef={register({ required: true })} />
+                    {errors[fieldNames.password] && <FormFeedback>Enter a password</FormFeedback>}
+                </FormGroup>
 
-                <input type="submit" />
-            </form>
+                <Button>Submit</Button>
+            </Form>
         </div>
     )
 };

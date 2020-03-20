@@ -10,22 +10,20 @@ import {
 } from "react-leaflet";
 import { ReactLeafletSearch } from "react-leaflet-search";
 import {
-    Link,
-    useHistory
-} from "react-router-dom";
+    Alert,
+    Button,
+    Form,
+    FormFeedback,
+    FormGroup,
+    Input,
+    Label
+} from "reactstrap";
 import { nameof } from "ts-simple-nameof";
 
 import { emailRegexp } from "../../constants";
-import { UserContext } from "../../contracts";
 
 import { Address } from "../../models/address";
 import { RegisterModel } from "../../models/register-model";
-import { User } from "../../models/user";
-
-interface IRegisterAddressState {
-    displayAddress: string;
-    address: Address;
-}
 
 const fieldNames = {
     email: nameof<RegisterModel>(x => x.email),
@@ -36,45 +34,94 @@ const fieldNames = {
     displayAddress: nameof<RegisterModel>(x => x.displayAddress)
 };
 
-const RegisterPage: React.FC<any> = () => {
-    const history = useHistory();
-    const { setUser } = React.useContext(UserContext);
+const RegisterPage: React.FC = () => {
     const { register, handleSubmit, errors } = useForm();
-    const [addressState, setAddressState] = React.useState<IRegisterAddressState>({
+    const [state, setState] = React.useState<RegisterModel>({
+        email: "",
+        name: "",
+        password: "",
+        surname: "",
         displayAddress: "",
         address: {} as Address
     });
+    const [error, setError] = React.useState<boolean>(false);
+    const showError = React.useCallback(
+        () => {
+            setError(true);
+            setTimeout(() => setError(false), 5000);
+        },
+        [setError]
+    );
+
+    const [success, setSuccess] = React.useState<boolean>(false);
+    const showSuccess = React.useCallback(
+        () => {
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 5000);
+        },
+        [setSuccess]
+    );
+
+    const setStatePartial = React.useCallback(
+        (newProps: Partial<RegisterModel>) => 
+            setState((prevState) => ({
+                ...prevState,
+                ...newProps
+            })),
+        [setState]
+    );
+
+    React.useEffect(
+        () => {
+            async function fetchRegisterModel() {
+                const response = await fetch("account/register");
+                if (!response.ok) {
+                    return;
+                }
+
+                const model: RegisterModel = await response.json();
+                if (model && model.email) {
+                    // cause controlled input does not like null values
+                    model.password = "";
+                    setState(model);
+                }
+            }
+            fetchRegisterModel();
+        },
+        [setState]
+    );
 
     const onSubmit = React.useCallback(
-        (submitData) => {
-            submitData.address = addressState.address;
-            fetch(
-                "account/register",
-                {
-                    method: "POST",
-                    cache: "no-cache",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(submitData)
-                })
-                .then(response => {
-                    console.log(response);
-                    response
-                        .json()
-                        .then((user: User) => {
-                            setUser({
-                                loggedIn: true,
-                                userName: user.email
-                            });
-                            history.push('/users')
-                        });
-                })
-                .catch();// TODO: add 403 handling
+        () => {
+            async function postRegisterModel() {
+                const response = await fetch(
+                    "account/register",
+                    {
+                        method: "POST",
+                        cache: "no-cache",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(state)
+                    }
+                );
+                if (response.ok) {
+                    showSuccess();
+                } else {
+                    showError();
+                }
 
+                const model: RegisterModel = await response.json();
+                if (model && model.email) {
+                    setState(model);
+                }
+            };
+
+            postRegisterModel();
         },
-        [setUser, history, addressState]
+        [setState, state, showError, showSuccess]
     );
+
 
     const SearchComponent = React.useMemo(
         () => {
@@ -94,7 +141,7 @@ const RegisterPage: React.FC<any> = () => {
 
                 // making sure that it's a house
                 if ("house_number" in rawAddress) {
-                    setAddressState({
+                    setStatePartial({
                         displayAddress: rawInfo.display_name,
                         address: {
                             country: rawAddress.country,
@@ -111,64 +158,109 @@ const RegisterPage: React.FC<any> = () => {
 
             return withLeaflet(ReactLeafletSearch);
         },
-        [setAddressState, ReactLeafletSearch]
+        [setStatePartial]
     );
 
+    const handleEmailChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => setStatePartial({ email: e.target.value }), 
+        [setStatePartial]
+    );
+
+    const handleNameChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => setStatePartial({ name: e.target.value }), 
+        [setStatePartial]
+    );
+
+    const handleSurnameChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => setStatePartial({ surname: e.target.value }), 
+        [setStatePartial]
+    );
+
+    const handlePasswordChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => setStatePartial({ password: e.target.value }), 
+        [setStatePartial]
+    );
+    
     return (
         <div>
             <h1>Register Page</h1>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <div>
-                    <label htmlFor={fieldNames.email}>Email</label>
-                    <input
+            {success && (
+                <Alert color="success">
+                    Register information successfully updated
+                </Alert>
+            )}
+            {error && (
+                <Alert color="danger">
+                    There was an error updating register information
+                </Alert>
+            )}
+
+            <Form onSubmit={handleSubmit(onSubmit)}>
+                <FormGroup>
+                    <Label htmlFor={fieldNames.email}>Email</Label>
+                    <Input
                         name={fieldNames.email}
-                        ref={register({ required: true, pattern: emailRegexp })} 
+                        innerRef={register({ required: true, pattern: emailRegexp })}
+                        value={state.email}
+                        onChange={handleEmailChange}
+                        invalid={!!errors[fieldNames.email]}
                     />
-                    {errors[fieldNames.email] && <span>Enter a valid email</span>}
-                </div>
+                    {errors[fieldNames.email] && <FormFeedback>Enter a valid email</FormFeedback>}
+                </FormGroup>
 
-                <div>
-                    <label htmlFor={fieldNames.name}>Name</label>
-                    <input
+                <FormGroup>
+                    <Label htmlFor={fieldNames.name}>Name</Label>
+                    <Input
                         name={fieldNames.name}
-                        ref={register({ required: true })} 
+                        innerRef={register({ required: true })} 
+                        value={state.name}
+                        onChange={handleNameChange}
+                        invalid={!!errors[fieldNames.name]}
                     />
-                    {errors[fieldNames.name] && <span>Enter your name</span>}
-                </div>
+                    {errors[fieldNames.name] && <FormFeedback>Enter your name</FormFeedback>}
+                </FormGroup>
 
-                <div>
-                    <label htmlFor={fieldNames.surname}>Surname</label>
-                    <input
+                <FormGroup>
+                    <Label htmlFor={fieldNames.surname}>Surname</Label>
+                    <Input
                         name={fieldNames.surname}
-                        ref={register({ required: true })} 
+                        innerRef={register({ required: true })} 
+                        value={state.surname}
+                        onChange={handleSurnameChange}
+                        invalid={!!errors[fieldNames.surname]}
                     />
-                    {errors[fieldNames.surname] && <span>Enter your surname</span>}
-                </div>
+                    {errors[fieldNames.surname] && <FormFeedback>Enter your surname</FormFeedback>}
+                </FormGroup>
 
-                <div>
-                    <label htmlFor={fieldNames.displayAddress}>Address</label>
-                    <input
+                <FormGroup>
+                    <Label htmlFor={fieldNames.displayAddress}>Address</Label>
+                    <Input
                         name={fieldNames.displayAddress}
-                        ref={register({ required: true })}
+                        innerRef={register({ required: true })}
                         readOnly={true}
-                        value={addressState.displayAddress}
+                        value={state.displayAddress}
+                        placeholder="Input your address into the text field on the map"
+                        invalid={!!errors[fieldNames.displayAddress]}
                     />
-                    {errors[fieldNames.displayAddress] && <span>Input your address into the text field on the map</span>}
-                </div>
+                    {errors[fieldNames.displayAddress] && <FormFeedback>Enter your address</FormFeedback>}
+                </FormGroup>
 
-                <div>
-                    <label htmlFor={fieldNames.password}>Choose a password</label>
-                    <input
+                <FormGroup>
+                    <Label htmlFor={fieldNames.password}>Choose a password</Label>
+                    <Input
                         name={fieldNames.password}
                         type="password"
-                        ref={register({ required: true })} 
+                        innerRef={register({ required: true, minLength: 2 })}
+                        value={state.password}
+                        onChange={handlePasswordChange}
+                        invalid={!!errors[fieldNames.password]}
                     />
-                    {errors[fieldNames.password] && <span>Enter a password</span>}
-                </div>
+                    {errors[fieldNames.password] && <FormFeedback>Enter a password</FormFeedback>}
+                </FormGroup>
 
-                <input type="submit" />
-            </form>
+                <Button>Submit</Button>
+            </Form>
 
             <div>
                 <Map

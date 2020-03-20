@@ -38,76 +38,125 @@ namespace StShop.UI.Controllers
             }
 
             [HttpGet]
-            public IActionResult IsAuthorized()
+            public async Task<IActionResult> IsAuthorized()
             {
-                var hasClaim = HttpContext.User?.Identity?.Name;
-                return Ok(new
+                var email = HttpContext.User?.Identity?.Name;
+                
+                DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (user != null)
                 {
-                    IsAuthorized = hasClaim
-                });
+                    return Ok(new ViewModels.User
+                    {
+                        Email = user.Email
+                    });
+                }
+                return Unauthorized("Not logged in");
             }
-            //[HttpGet]
-            //public IActionResult Register()
-            //{
-            //    return View();
-            //}
 
+            // Get existing user
+            [HttpGet]
+            public async Task<IActionResult> Register()
+            {
+                var email = HttpContext.User?.Identity?.Name;
+                if (email == null)
+                {
+                    return Unauthorized("Not logged in");
+                }
+
+                var result = await GetRegisterModel(email);
+                if (result == null)
+                {
+                    return Unauthorized("User not found");
+                }
+
+                return Ok(result);
+            }
+
+            // Add or update user
             [HttpPost]
             public async Task<IActionResult> Register([FromBody]RegisterModel model)
             {
-                DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+                var user = await GetUser(model.Email);
                 if (user == null)
                 {
-                    _context.Users.Add(new DAL.Models.User { 
-                        Role = DAL.Models.UserRole.Customer,
-                        Email = model.Email,
-                        Password = model.Password,
-                        Name = model.Name,
-                        Surname = model.Surname,
-                        DisplayAddress = model.DisplayAddress,
-                        Address = new DAL.Models.Address
-                        {
-                            Country = model.Address.Country,
-                            City = model.Address.City,
-                            Street = model.Address.Street,
-                            House = model.Address.House,
-                            ZipCode = model.Address.ZipCode
-                        }
-                    });
-                    await _context.SaveChangesAsync();
-
+                    user = new DAL.Models.User
+                    {
+                        Address = new DAL.Models.Address()
+                    };
+                    _context.Users.Add(user);
                     await Authenticate(model.Email);
+                }
 
-                    return Ok(
-                        new ViewModels.User
-                        {
-                            Email = model.Email,
-                        }
-                    );
-                }
-                else
-                {
-                    return Forbid();
-                }
+                user.Role = DAL.Models.UserRole.Customer;
+                user.Email = model.Email;
+                user.Password = model.Password;
+                user.Name = model.Name;
+                user.Surname = model.Surname;
+                user.DisplayAddress = model.DisplayAddress;
+                user.Address.Country = model.Address.Country;
+                user.Address.City = model.Address.City;
+                user.Address.Street = model.Address.Street;
+                user.Address.House = model.Address.House;
+                user.Address.ZipCode = model.Address.ZipCode;
+
+                await _context.SaveChangesAsync();
+                var result = await GetRegisterModel(model.Email);
+                return Ok(result);
             }
 
-            private async Task Authenticate(string userName)
-            {
-                // создаем один claim
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimsIdentity.DefaultNameClaimType, userName)
-                };
-                // создаем объект ClaimsIdentity
-                ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-                // установка аутентификационных куки
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
-            }
-
+            [HttpPost]
             public async Task<IActionResult> Logout()
             {
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                return RedirectToAction("Login", "Account");
+                return Ok();
+            }
+
+            private async Task Authenticate(string email)
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, email)
+                };
+                ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+            }
+
+            private async Task<DAL.Models.User> GetUser(string email)
+            {
+                return await _context.Users
+                    .Include(x => x.Address)
+                    .FirstOrDefaultAsync(x =>
+                        x.Email == email &&
+                        x.Role == DAL.Models.UserRole.Customer
+                    );
+            }
+
+            private async Task<ViewModels.RegisterModel> GetRegisterModel(string email)
+            {
+                var user = await GetUser(email);
+
+                if (user == null)
+                {
+                    return null;
+                }
+
+                var address = user.Address;
+
+                return new RegisterModel
+                {
+                    Email = user.Email,
+                    DisplayAddress = user.DisplayAddress,
+                    Name = user.Name,
+                    Surname = user.Surname,
+                    Address = new Address
+                    {
+                        Country = user.Address.Country,
+                        City = user.Address.City,
+                        Street = user.Address.Street,
+                        House = user.Address.House,
+                        ZipCode = user.Address.ZipCode
+                    }
+                };
             }
         }
     }
