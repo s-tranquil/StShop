@@ -21,8 +21,8 @@ import {
 import { nameof } from "ts-simple-nameof";
 
 import { emailRegexp } from "../../constants";
+import { UserContext } from "../../contracts";
 
-import { Address } from "../../models/address";
 import { RegisterModel } from "../../models/register-model";
 
 const fieldNames = {
@@ -36,14 +36,18 @@ const fieldNames = {
 
 const RegisterPage: React.FC = () => {
     const { register, handleSubmit, errors } = useForm();
-    const [state, setState] = React.useState<RegisterModel>({
-        email: "",
-        name: "",
-        password: "",
-        surname: "",
-        displayAddress: "",
-        address: {} as Address
-    });
+    const { user, setUser } = React.useContext(UserContext);
+    // initial value from context
+    const model = React.useMemo(
+        () => ({ 
+            ...user,
+            // cause controlled input does not like null values
+            password: ""
+        } as RegisterModel), 
+        [user]
+    );
+    const [state, setState] = React.useState<RegisterModel>(model);
+
     const [error, setError] = React.useState<boolean>(false);
     const showError = React.useCallback(
         () => {
@@ -71,26 +75,6 @@ const RegisterPage: React.FC = () => {
         [setState]
     );
 
-    React.useEffect(
-        () => {
-            async function fetchRegisterModel() {
-                const response = await fetch("account/register");
-                if (!response.ok) {
-                    return;
-                }
-
-                const model: RegisterModel = await response.json();
-                if (model && model.email) {
-                    // cause controlled input does not like null values
-                    model.password = "";
-                    setState(model);
-                }
-            }
-            fetchRegisterModel();
-        },
-        [setState]
-    );
-
     const onSubmit = React.useCallback(
         () => {
             async function postRegisterModel() {
@@ -105,21 +89,23 @@ const RegisterPage: React.FC = () => {
                         body: JSON.stringify(state)
                     }
                 );
-                if (response.ok) {
-                    showSuccess();
-                } else {
+                if (!response.ok) {
                     showError();
+                    return;
                 }
-
+                
+                showSuccess();
                 const model: RegisterModel = await response.json();
                 if (model && model.email) {
                     setState(model);
+                    const { password, ...rest } = model;
+                    setUser(rest);
                 }
             };
 
             postRegisterModel();
         },
-        [setState, state, showError, showSuccess]
+        [setState, state, setUser, showError, showSuccess]
     );
 
 
@@ -134,7 +120,9 @@ const RegisterPage: React.FC = () => {
                 const rawInfos = (props[2] as any).raw as any[];
                 const rawInfo = rawInfos
                     .find(x => 
+                        // eslint-disable-next-line
                         x.lat == latLng.lat && 
+                        // eslint-disable-next-line
                         x.lon == latLng.lng
                     );
                 const rawAddress = rawInfo.address;

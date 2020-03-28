@@ -16,7 +16,7 @@ const AuthorizedRoute: React.FC<RouteProps> = ({ component, ...rest }) => {
         <Route
             {...rest}
             render={props => {
-                return user?.loggedIn
+                return user?.email
                     ? <Component {...props} />
                     : <Redirect to="/auth/login" />
             }}

@@ -6,6 +6,7 @@ import {
     useHistory
 } from "react-router-dom";
 import {
+    Alert,
     Button,
     Form,
     FormFeedback,
@@ -19,7 +20,7 @@ import { emailRegexp } from "../../constants";
 import { UserContext } from "../../contracts";
 
 import { LoginModel } from "../../models/login-model";
-import { User } from "../../models/user";
+import { UserProfile } from "../../models/user-profile";
 
 const fieldNames = {
     email: nameof<LoginModel>(x => x.email),
@@ -31,40 +32,55 @@ const LoginPage: React.FC<any> = () => {
     const { setUser } = React.useContext(UserContext);
     const { register, handleSubmit, errors } = useForm();
 
+    const [error, setError] = React.useState<boolean>(false);
+    const showError = React.useCallback(
+        () => {
+            setError(true);
+            setTimeout(() => setError(false), 5000);
+        },
+        [setError]
+    );
+
     const onSubmit = React.useCallback(
         (submitData) => {
-            fetch(
-                "account/login",
-                {
-                    method: "POST",
-                    cache: "no-cache",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(submitData)
-                })
-                .then(response => {
-                    console.log(response);
-                    response
-                        .json()
-                        .then((user: User) => {
-                            setUser({
-                                loggedIn: true,
-                                userName: user.email
-                            });
-                            history.push('/users')
-                        });
-                })
-                .catch();// TODO: add 401 handling
+            async function tryLogin(data: LoginModel) {
+                const response = await fetch(
+                    "account/login",
+                    {
+                        method: "POST",
+                        cache: "no-cache",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(data)
+                    }
+                );
+                if (!response.ok) {
+                    showError();
+                    return;
+                }
 
+                const user: UserProfile = await response.json();
+
+                setUser(user);
+                history.push('/users')
+            };
+
+            tryLogin(submitData);
         },
-        [setUser, history]
+        [setUser, history, showError]
     );
 
     return (
         <div>
             <h1>Login Page</h1>
             <Link to="/auth/register">To register page</Link>
+
+            {error && (
+                <Alert color="danger">
+                    Wrong login/password
+                </Alert>
+            )}
 
             <Form onSubmit={handleSubmit(onSubmit)}>
                 <FormGroup>

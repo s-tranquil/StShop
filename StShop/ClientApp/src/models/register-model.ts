@@ -1,12 +1,7 @@
 ﻿/* Auto Generated */
 
-import { Address } from "./address";
+import { UserProfile } from "./user-profile";
 
-export interface RegisterModel {
-    email: string;
-    name: string;
-    surname: string;
-    displayAddress: string;
-    address: Address;
+export interface RegisterModel extends UserProfile {
     password: string;
 }

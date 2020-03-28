@@ -14,6 +14,8 @@ namespace StShop.UI.Controllers
 {
     namespace AuthApp.Controllers
     {
+        [ApiController]
+        [Route("[controller]")]
         public class AccountController : ControllerBase
         {
             private readonly AllContext _context;
@@ -22,40 +24,22 @@ namespace StShop.UI.Controllers
                 _context = context;
             }
 
-            [HttpPost]
+            [HttpPost("login")]
             public async Task<IActionResult> Login([FromBody]LoginModel model)
             {
                 DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
-                    await Authenticate(model.Email);
-                    return Ok(new ViewModels.User
-                    {
-                        Email = user.Email
-                    });
+                    await Authenticate(user.Email);
+                    var userProfile = await GetUserProfile(user.Email);
+                    return Ok(userProfile);
                 }
                 return Unauthorized("Wrong login/password");
             }
 
-            [HttpGet]
-            public async Task<IActionResult> IsAuthorized()
-            {
-                var email = HttpContext.User?.Identity?.Name;
-                
-                DAL.Models.User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-                if (user != null)
-                {
-                    return Ok(new ViewModels.User
-                    {
-                        Email = user.Email
-                    });
-                }
-                return Unauthorized("Not logged in");
-            }
-
             // Get existing user
-            [HttpGet]
-            public async Task<IActionResult> Register()
+            [HttpGet("getprofile")]
+            public async Task<IActionResult> GetProfile()
             {
                 var email = HttpContext.User?.Identity?.Name;
                 if (email == null)
@@ -63,7 +47,7 @@ namespace StShop.UI.Controllers
                     return Unauthorized("Not logged in");
                 }
 
-                var result = await GetRegisterModel(email);
+                var result = await GetUserProfile(email);
                 if (result == null)
                 {
                     return Unauthorized("User not found");
@@ -73,7 +57,7 @@ namespace StShop.UI.Controllers
             }
 
             // Add or update user
-            [HttpPost]
+            [HttpPost("register")]
             public async Task<IActionResult> Register([FromBody]RegisterModel model)
             {
                 var user = await GetUser(model.Email);
@@ -100,11 +84,11 @@ namespace StShop.UI.Controllers
                 user.Address.ZipCode = model.Address.ZipCode;
 
                 await _context.SaveChangesAsync();
-                var result = await GetRegisterModel(model.Email);
+                var result = await GetUserProfile(model.Email);
                 return Ok(result);
             }
 
-            [HttpPost]
+            [HttpPost("logout")]
             public async Task<IActionResult> Logout()
             {
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -131,7 +115,7 @@ namespace StShop.UI.Controllers
                     );
             }
 
-            private async Task<ViewModels.RegisterModel> GetRegisterModel(string email)
+            private async Task<ViewModels.UserProfile> GetUserProfile(string email)
             {
                 var user = await GetUser(email);
 
@@ -140,9 +124,7 @@ namespace StShop.UI.Controllers
                     return null;
                 }
 
-                var address = user.Address;
-
-                return new RegisterModel
+                return new UserProfile
                 {
                     Email = user.Email,
                     DisplayAddress = user.DisplayAddress,
