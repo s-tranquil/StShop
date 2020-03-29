@@ -32,33 +32,11 @@
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
-   <ItemGroup>
-	  <Content Include="ClientApp\build\**"> 
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
-	  </Content> 
-   </ItemGroup>
-
   <ItemGroup>
-    <None Remove="ClientApp\src\App.test.tsx" />
-    <None Remove="ClientApp\src\constants\email-regexp.ts" />
-    <None Remove="ClientApp\src\constants\index.ts" />
-    <None Remove="ClientApp\src\index.tsx" />
-    <None Remove="ClientApp\src\models\index.ts" />
-    <None Remove="ClientApp\src\tsd.d.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Remove="ClientApp\src\AuthorizedRoute.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\components\Counter.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\components\FetchData.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\components\Home.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\components\Layout.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\components\NavMenu.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\components\UsersTable.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\LoginPage.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\RegisterPage.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\UnauthorizedLayout.tsx" />
-    <TypeScriptCompile Remove="ClientApp\src\UserContext.tsx" />
+	<Content Include="ClientApp\build\**"> 
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

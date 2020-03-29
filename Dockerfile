@@ -5,33 +5,24 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-#RUN curl -sL https://deb.nodesource.com/setup_12.x |  bash -
-#RUN apt-get install nodejs -y
-#RUN npm --version
-
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
-WORKDIR /src
-COPY ["StShop/StShop.UI.csproj", "StShop/"]
-RUN true
-COPY ["StShop.DAL/StShop.DAL.csproj", "StShop.DAL/"]
-RUN dotnet restore "StShop/StShop.UI.csproj"
-COPY . .
-WORKDIR "/src/StShop"
-RUN dotnet build "StShop.UI.csproj" -c Release -o /app/build
-RUN true
-WORKDIR "/src/StShop/ClientApp"
-RUN true
-COPY ["StShop/ClientApp/package*.json", "./"]
 
+WORKDIR /src
+COPY ["StShop.DAL/StShop.DAL.csproj", "StShop.DAL/"]
+COPY ["StShop/StShop.UI.csproj", "StShop/"]
+RUN dotnet restore "StShop/StShop.UI.csproj"
 RUN true
-COPY ["StShop/ClientApp/public/*", "./public/"]
+
+COPY . .
 RUN true
-COPY ["StShop/ClientApp/src/*", "./src/"]
+
+WORKDIR "/src/StShop/ClientApp"
 RUN apt-get update
 RUN apt-get install build-essential -y
 RUN curl -sL https://deb.nodesource.com/setup_12.x |  bash -
 RUN apt-get install nodejs -y
 RUN npm ci
+RUN npm run build
 
 WORKDIR "/src/StShop"
 FROM build AS publish
